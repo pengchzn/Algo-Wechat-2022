@@ -43,13 +43,40 @@ P.S： 抽帧算法为 [Swin Transformer Tiny](https://zhuanlan.zhihu.com/p/3613
 - [ ] ？
 
 ### 2、分类器
+
 采用`半监督学习`的方向，首先将`十万量级的有标注数据`切分为子训练集与子测试集，初步训练一个基础分类器，而后利用自训练对初步分类器进行迭代升级，具体步骤如下：
 
 - ①用子训练集训练基础分类器；
 - ②将分类器在**无标注数据**上进行预测，将预测结果中概率/相关性高于阈值的认作“伪标签”；*（可以通过概率为伪标签进行加权）*
 - ③将带“伪标签”的数据与子训练集拼接，作为新的训练集重新训练分类器；
 - ④将重训后的分类器在子测试集上进行测试，计算相应的F1值，评估分类器性能
-重复②③④步，直到②中没有满足阈值的数据
+  重复②③④步，直到②中没有满足阈值的数据
 
+#### 2.1 分类器算法
 
-## 三、还没想好！！！
+- [ ] Gaussian Mixed Model(评估指标：model.predict_proba())
+- [ ] ?
+
+## 三、文件结构
+
+<pre>
+.
+├── baseline
+├── checkpoints
+├── config.py
+├── data
+│   ├── dataset.py
+│   ├── _init_.py
+│   ├── test
+│   └── train
+├── LICENSE
+├── logs
+├── main.py
+├── models
+│   └── _init_.py
+├── README.md
+├── requirements.txt
+└── utils
+    ├── _init_.py
+    └── visualize.py
+</pre>
