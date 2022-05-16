@@ -37,7 +37,8 @@ P.S： 抽帧算法为 [Swin Transformer Tiny](https://zhuanlan.zhihu.com/p/3613
 - [ ] 图神经网络
 - [ ] 三维卷积神经网络
 - [ ] 等等······
-- [ ] 三维卷积神经网络不太行把，数据是四维的，一个是feature_frame,ocr,asr,以及文本信息，feature_frame和ocr是与时间相关的，其他的都与时间无关，用LSTM好像也不太合适
+
+
 
 其次，`asr` `ocr` 字段含有大量中文文本信息，需要通过语义分析，提取有效信息，得到相应的清洗后的特征，初步设想：
 - [ ] ？
