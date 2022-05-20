@@ -1,13 +1,15 @@
-import logging
 import os
 import time
+import warnings
 
 import torch
 
 from config import parse_args
 from data_helper import create_dataloaders
 from model import MultiModal
-from util import setup_device, setup_seed, setup_logging, build_optimizer, evaluate
+from util import setup_device, setup_seed, logout, build_optimizer, evaluate
+
+warnings.filterwarnings("ignore")
 
 
 def validate(model, val_dataloader):
@@ -60,13 +62,13 @@ def train_and_validate(args):
                 time_per_step = (time.time() - start_time) / max(1, step)
                 remaining_time = time_per_step * (num_total_steps - step)
                 remaining_time = time.strftime('%H:%M:%S', time.gmtime(remaining_time))
-                logging.info(
+                logout().info(
                     f"Epoch {epoch} step {step} eta {remaining_time}: loss {loss:.3f}, accuracy {accuracy:.3f}")
 
         # 4. validation
         loss, results = validate(model, val_dataloader)
         results = {k: round(v, 4) for k, v in results.items()}
-        logging.info(f"Epoch {epoch} step {step}: loss {loss:.3f}, {results}")
+        logout().info(f"Epoch {epoch} step {step}: loss {loss:.3f}, {results}")
 
         # 5. save checkpoint
         mean_f1 = results['mean_f1']
@@ -78,13 +80,11 @@ def train_and_validate(args):
 
 def main():
     args = parse_args()
-    setup_logging()
+
     setup_device(args)
     setup_seed(args)
-
     os.makedirs(args.savedmodel_path, exist_ok=True)
-    logging.info("Training/evaluation parameters: %s", args)
-
+    logout().info("Training/evaluation parameters: %s", args)
     train_and_validate(args)
 
 

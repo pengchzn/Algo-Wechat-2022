@@ -26,8 +26,8 @@ CATEGORY_ID_LIST = [
     '2216', '2217', '2218', '2219', '2220', '2221', '2222', '2223'
 ]
 
-CATEGORY_ID_TO_LV2ID = {k: v for v, k in enumerate(CATEGORY_ID_LIST)}
-LV2ID_TO_CATEGORY_ID = {v: k for v, k in enumerate(CATEGORY_ID_LIST)}
+CATEGORY_ID_TO_LV2ID = {k: v for v, k in enumerate(CATEGORY_ID_LIST)}  # 获取第一级标签
+LV2ID_TO_CATEGORY_ID = {v: k for v, k in enumerate(CATEGORY_ID_LIST)}  # 获取第二级标签
 
 
 def category_id_to_lv1id(category_id: str) -> int:

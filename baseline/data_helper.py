@@ -63,16 +63,17 @@ class MultiModalDataset(Dataset):
         self.zip_feat_path = zip_feats
         self.handles = [None for _ in range(args.num_workers)]
 
-        # load annotations
+        # load annotations（导入标题数据）
         with open(ann_path, 'r', encoding='utf8') as f:
             self.anns = json.load(f)
 
-        # initialize the text tokenizer
+        # initialize the text tokenizer（初始化BERT分词器）
         self.tokenizer = BertTokenizer.from_pretrained(args.bert_dir, use_fast=True, cache_dir=args.bert_cache)
 
     def __len__(self) -> int:
         return len(self.anns)
 
+    # 读取视频抽帧特征
     def get_visual_feats(self, worker_id, idx: int) -> tuple:
         # read data from zipfile
         vid = self.anns[idx]['id']
