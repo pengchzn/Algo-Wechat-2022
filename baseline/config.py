@@ -1,10 +1,29 @@
+import logging
+import time
+
+
+def logout():
+    log_name = '{}.log'.format(time.strftime('%Y-%m-%d-%H-%M'))
+    logging.basicConfig(filename='../logs/' + log_name,
+                        filemode='w',
+                        format='%(asctime)s - %(levelname)s - %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S',
+                        level=logging.INFO)
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    logger = logging.getLogger(log_name)
+    logger.addHandler(console)
+
+    return logger
+
+
 import argparse
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Baseline for Weixin Challenge 2022")
 
-    parser.add_argument("--seed", type=int, default=2022, help="random seed.")
+    parser.add_argument("--seed", type=int, default=42, help="random seed.")
     parser.add_argument('--dropout', type=float, default=0.3, help='dropout ratio')
 
     # ========================= Data Configs ==========================
@@ -15,7 +34,7 @@ def parse_args():
     parser.add_argument('--test_output_csv', type=str, default='data/result.csv')
     parser.add_argument('--val_ratio', default=0.1, type=float,
                         help='split 10 percentages of training data as validation')
-    parser.add_argument('--batch_size', default=64, type=int, help="use for training duration per worker")
+    parser.add_argument('--batch_size', default=32, type=int, help="use for training duration per worker")
     parser.add_argument('--val_batch_size', default=256, type=int, help="use for validation duration per worker")
     parser.add_argument('--test_batch_size', default=256, type=int, help="use for testing duration per worker")
     parser.add_argument('--prefetch', default=16, type=int, help="use for training duration per worker")
@@ -37,7 +56,7 @@ def parse_args():
     parser.add_argument("--adam_epsilon", default=1e-6, type=float, help="Epsilon for Adam optimizer.")
 
     # ========================== Title BERT =============================
-    parser.add_argument('--bert_dir', type=str, default='hfl/chinese-macbert-base')
+    parser.add_argument('--bert_dir', type=str, default='nghuyong/ernie-gram-zh')
     parser.add_argument('--bert_cache', type=str, default='data/cache')
     parser.add_argument('--bert_seq_length', type=int, default=50)
     parser.add_argument('--bert_learning_rate', type=float, default=3e-5)
