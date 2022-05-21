@@ -1,7 +1,5 @@
 import logging
-import os
 import random
-import time
 
 import numpy as np
 import torch
@@ -22,44 +20,11 @@ def setup_seed(args):
     torch.manual_seed(args.seed)
 
 
-def logout():
-    log_name = '{}.log'.format(time.strftime('%Y-%m-%d-%H-%M'))
-    logging.basicConfig(filename='../logs/' + log_name,
-                        filemode='w',
-                        format='%(asctime)s - %(levelname)s - %(message)s',
-                        datefmt='%Y-%m-%d %H:%M:%S',
-                        level=logging.INFO)
-    console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
-    logger = logging.getLogger(log_name)
-    logger.addHandler(console)
-
-    return logger
-
-
-def log_creater(output_dir):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    log_name = '{}.log'.format(time.strftime('%Y-%m-%d-%H-%M'))
-    final_log_file = os.path.join(output_dir, log_name)
-
-    # creat a log
+def setup_logging():
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S',
                         level=logging.INFO)
     logger = logging.getLogger(__name__)
-
-    # FileHandler
-    file = logging.FileHandler(final_log_file)
-    file.setLevel(logging.INFO)
-
-    # StreamHandler
-    stream = logging.StreamHandler()
-    stream.setLevel(logging.INFO)
-
-    # addHandler
-    logger.addHandler(file)
-    logger.addHandler(stream)
 
     return logger
 
