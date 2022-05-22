@@ -4,7 +4,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Baseline for Weixin Challenge 2022")
 
-    parser.add_argument("--seed", type=int, default=42, help="random seed.")
+    parser.add_argument("--seed", type=int, default=2022, help="random seed.")
     parser.add_argument('--dropout', type=float, default=0.3, help='dropout ratio')
 
     # ========================= Data Configs ==========================
@@ -22,8 +22,8 @@ def parse_args():
     parser.add_argument('--num_workers', default=4, type=int, help="num_workers for dataloaders")
 
     # ======================== SavedModel Configs =========================
-    parser.add_argument('--savedmodel_path', type=str, default='./checkpoints/v5.1')
-    parser.add_argument('--ckpt_file', type=str, default='./checkpoints/v1/model_.bin')
+    parser.add_argument('--savedmodel_path', type=str, default='./checkpoints/v5.2')
+    parser.add_argument('--ckpt_file', type=str, default='./checkpoints/v5.2/model_epoch_5_mean_f1_0.5832.bin')
     parser.add_argument('--best_score', default=0.55, type=float, help='save checkpoint if mean_f1 > best_score')
 
     # ========================= Learning Configs ==========================
@@ -40,7 +40,7 @@ def parse_args():
     parser.add_argument('--bert_dir', type=str, default='nghuyong/ernie-gram-zh')
     parser.add_argument('--bert_cache', type=str, default='./data/cache')
     parser.add_argument('--bert_seq_length', type=int, default=50)
-    parser.add_argument('--bert_learning_rate', type=float, default=5e-5)
+    parser.add_argument('--bert_learning_rate', type=float, default=3e-5)
     parser.add_argument('--bert_warmup_steps', type=int, default=5000)
     parser.add_argument('--bert_max_steps', type=int, default=30000)
     parser.add_argument("--bert_hidden_dropout_prob", type=float, default=0.1)
