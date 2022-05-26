@@ -5,7 +5,8 @@ import time
 import numpy as np
 import torch
 from sklearn.metrics import f1_score, accuracy_score
-from transformers import AdamW, get_linear_schedule_with_warmup
+from torch.optim import AdamW
+from transformers import get_linear_schedule_with_warmup
 
 from data.category_id_map import lv2id_to_lv1id
 
@@ -71,3 +72,4 @@ def evaluate(predictions, labels):
                     'mean_f1': mean_f1}
 
     return eval_results
+

@@ -23,7 +23,9 @@ class MultiModal(nn.Module):
         vision_embedding = self.nextvlad(inputs['frame_input'], inputs['frame_mask'])
         vision_embedding = self.enhance(vision_embedding)
 
-        final_embedding = self.fusion([vision_embedding, bert_embedding])
+        final_embedding = self.fusion([bert_embedding, vision_embedding])
+        # final1_embedding = self.fusion([bert_embedding,asr_embedding])
+        # final_embedding = self.fusion([final1_embedding,vision_embedding])
         prediction = self.classifier(final_embedding)
 
         if inference:
@@ -118,3 +120,39 @@ class ConcatDenseSE(nn.Module):
         embedding = self.enhance(embedding)
 
         return embedding
+
+
+class EMA():
+    def __init__(self, model, decay):
+        self.model = model
+        self.decay = decay
+        self.shadow = {}
+        self.backup = {}
+
+    def register(self):
+        for name, param in self.model.named_parameters():
+            if param.requires_grad:
+                self.shadow[name] = param.data.clone()
+
+    def update(self):
+        for name, param in self.model.named_parameters():
+            if param.requires_grad:
+                assert name in self.shadow
+                self.shadow[name] = self.shadow[name].to(
+                    device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+                new_average = (1.0 - self.decay) * param.data + self.decay * self.shadow[name]
+                self.shadow[name] = new_average.clone()
+
+    def apply_shadow(self):
+        for name, param in self.model.named_parameters():
+            if param.requires_grad:
+                assert name in self.shadow
+                self.backup[name] = param.data
+                param.data = self.shadow[name]
+
+    def restore(self):
+        for name, param in self.model.named_parameters():
+            if param.requires_grad:
+                assert name in self.backup
+                param.data = self.backup[name]
+        self.backup = {}

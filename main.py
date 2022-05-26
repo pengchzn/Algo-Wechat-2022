@@ -5,7 +5,7 @@ import torch
 
 from config import parse_args
 from data.data_helper import create_dataloaders
-from models.model import MultiModal
+from models.model import MultiModal, EMA
 from utils.util import setup_device, setup_seed, logout, build_optimizer, evaluate
 
 
@@ -34,6 +34,8 @@ def train_and_validate(args):
 
     # 2. build model and optimizers
     model = MultiModal(args)
+    ema = EMA(model, 0.999)
+    ema.register()
     optimizer, scheduler = build_optimizer(args, model)
     if args.device == 'cuda':
         model = torch.nn.parallel.DataParallel(model.to(args.device))
@@ -53,12 +55,13 @@ def train_and_validate(args):
             optimizer.step()
             optimizer.zero_grad()
             scheduler.step()
-
+            ema.update()
             step += 1
             if step % args.print_steps == 0:
                 time_per_step = (time.time() - start_time) / max(1, step)
                 remaining_time = time_per_step * (num_total_steps - step)
                 remaining_time = time.strftime('%H:%M:%S', time.gmtime(remaining_time))
+                ema.apply_shadow()
                 logout().info(
                     f"Epoch {epoch} step {step} eta {remaining_time}: loss {loss:.3f}, accuracy {accuracy:.3f}")
 
@@ -74,6 +77,7 @@ def train_and_validate(args):
             state_dict = model.module.state_dict() if args.device == 'cuda' else model.state_dict()
             torch.save({'epoch': epoch, 'model_state_dict': state_dict, 'mean_f1': mean_f1},
                        f'{args.savedmodel_path}/model_epoch_{epoch}_mean_f1_{mean_f1}.bin')
+        ema.restore()
 
 
 def main():
