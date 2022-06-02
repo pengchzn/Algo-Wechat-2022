@@ -22,10 +22,7 @@ class MultiModal(nn.Module):
 
         vision_embedding = self.nextvlad(inputs['frame_input'], inputs['frame_mask'])
         vision_embedding = self.enhance(vision_embedding)
-
         final_embedding = self.fusion([bert_embedding, vision_embedding])
-        # final1_embedding = self.fusion([bert_embedding,asr_embedding])
-        # final_embedding = self.fusion([final1_embedding,vision_embedding])
         prediction = self.classifier(final_embedding)
 
         if inference:

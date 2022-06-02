@@ -19,7 +19,6 @@ def create_dataloaders(args):
     val_size = int(size * args.val_ratio)
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, [size - val_size, val_size],
                                                                generator=torch.Generator().manual_seed(args.seed))
-
     if args.num_workers > 0:
         dataloader_class = partial(DataLoader, pin_memory=True, num_workers=args.num_workers,
                                    prefetch_factor=args.prefetch)
@@ -126,25 +125,37 @@ class MultiModalDataset(Dataset):
         frame_input, frame_mask = self.get_visual_feats(idx)
 
         # Step 2, load title tokens
-        from sklearn.feature_extraction.text import TfidfVectorizer
-        word_vec = TfidfVectorizer(analyzer='char',
-                                   ngram_range=(1, 2),
-                                   use_idf=True,
-                                   max_features=3000,
-                                   smooth_idf=True,
-                                   sublinear_tf=True)
-        tit_asr = np.array2string(np.char.add(self.anns[idx]['title'], self.anns[idx]['asr']))
-        # word_vec.fit([tit_asr])
-        # tf_data = word_vec.transform([tit_asr])
-        # tf_data = np.array2string(np.array(tf_data.data).reshape(tf_data.shape))
-        title_input, title_mask = self.tokenize_text(tit_asr)
+        self.anns[idx]['ocr_text'] = ''
+        self.anns[idx]['ocr_text'] = ''.join([item['text'] for item in self.anns[idx]['ocr']])
+
+        # tit = self.tokenizer.tokenize(self.anns[idx]['title'])
+        # tit = ''.join(tit[:43])
+        # asr = self.tokenizer.tokenize(self.anns[idx]['asr'])
+        # asr = ''.join(asr[:43])
+        # ocr = self.tokenizer.tokenize(self.anns[idx]['ocr_text'])
+        # ocr = ''.join(ocr[:43])
+        #
+        #
+        # text = '[CSL]' + tit + '[SEP]' + asr + '[SEP]' + ocr + '[SEP]'
+
+        text = '[CSL]' + self.anns[idx]['title'] + '[SEP]' + self.anns[idx]['asr'] + \
+               '[SEP]' + self.anns[idx]['ocr_text'] + '[SEP]'
+
+        text_input, text_mask = self.tokenize_text(text)
+        # print(self.anns[idx]['title'].shape)
+        # print(text_mask.shape)
+        #
+        # total_input = torch.cat([frame_input, text_input], 1)
+        # mask = torch.cat([frame_mask, text_mask], 1)
+        # mask = mask[:, None, None, :]
+        # mask = (1.0 - mask) * -10000.0
 
         # Step 3, summarize into a dictionary
         data = dict(
             frame_input=frame_input,
             frame_mask=frame_mask,
-            title_input=title_input,
-            title_mask=title_mask
+            title_input=text_input,
+            title_mask=text_mask
         )
 
         # Step 4, load label if not test mode

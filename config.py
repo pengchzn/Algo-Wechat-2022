@@ -4,8 +4,8 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Baseline for Weixin Challenge 2022")
 
-    parser.add_argument("--seed", type=int, default=1224, help="random seed.")
-    parser.add_argument('--dropout', type=float, default=0.3, help='dropout ratio')
+    parser.add_argument("--seed", type=int, default=42, help="random seed.")
+    parser.add_argument('--dropout', type=float, default=0.1, help='dropout ratio')
 
     # ========================= Data Configs ==========================
     parser.add_argument('--train_annotation', type=str, default='./data/annotations/labeled.json')
@@ -22,25 +22,26 @@ def parse_args():
     parser.add_argument('--num_workers', default=4, type=int, help="num_workers for dataloaders")
 
     # ======================== SavedModel Configs =========================
-    parser.add_argument('--savedmodel_path', type=str, default='./checkpoints/v5')
-    parser.add_argument('--ckpt_file', type=str, default='./checkpoints/v4/model_epoch_5_mean_f1_0.6009.bin')
-    parser.add_argument('--best_score', default=0.55, type=float, help='save checkpoint if mean_f1 > best_score')
+    parser.add_argument('--savedmodel_path', type=str, default='./checkpoints/2')
+    parser.add_argument('--ckpt_file', type=str, default='./checkpoints/2/model_epoch_1_mean_f1_0.6248.bin')
+    parser.add_argument('--best_score', default=0.6, type=float, help='save checkpoint if mean_f1 > best_score')
 
     # ========================= Learning Configs ==========================
-    parser.add_argument('--max_epochs', type=int, default=40, help='How many epochs')
+    parser.add_argument('--max_epochs', type=int, default=10, help='How many epochs')
     parser.add_argument('--max_steps', default=50000, type=int, metavar='N', help='number of total epochs to run')
     parser.add_argument('--print_steps', type=int, default=20, help="Number of steps to log training metrics.")
     parser.add_argument('--warmup_steps', default=1000, type=int, help="warm ups for parameters not in bert or vit")
     parser.add_argument('--minimum_lr', default=0., type=float, help='minimum learning rate')
     parser.add_argument('--learning_rate', default=5e-5, type=float, help='initial learning rate')
-    parser.add_argument("--weight_decay", default=0.01, type=float, help="Weight deay if we apply some.")
+    parser.add_argument("--weight_decay", default=0.08, type=float, help="Weight deay if we apply some.")
     parser.add_argument("--adam_epsilon", default=1e-6, type=float, help="Epsilon for Adam optimizer.")
 
     # ========================== Title BERT =============================
-    parser.add_argument('--bert_dir', type=str, default='nghuyong/ernie-gram-zh')
+    # parser.add_argument('--bert_dir', type=str, default='nghuyong/ernie-gram-zh')
+    parser.add_argument('--bert_dir', type=str, default='hfl/chinese-roberta-wwm-ext')
     parser.add_argument('--bert_cache', type=str, default='./data/cache')
     parser.add_argument('--bert_seq_length', type=int, default=80)
-    parser.add_argument('--bert_learning_rate', type=float, default=3e-5)
+    parser.add_argument('--bert_learning_rate', type=float, default=2e-4)
     parser.add_argument('--bert_warmup_steps', type=int, default=5000)
     parser.add_argument('--bert_max_steps', type=int, default=30000)
     parser.add_argument("--bert_hidden_dropout_prob", type=float, default=0.1)
@@ -55,5 +56,4 @@ def parse_args():
 
     # ========================== Fusion Layer =============================
     parser.add_argument('--fc_size', type=int, default=512, help="linear size before final linear")
-
     return parser.parse_args()

@@ -1,11 +1,11 @@
 import os
-import time
 
 import torch
+from tqdm import *
 
 from config import parse_args
 from data.data_helper import create_dataloaders
-from models.model import MultiModal, EMA
+from models.model import MultiModal
 from utils.util import setup_device, setup_seed, logout, build_optimizer, evaluate
 
 
@@ -14,13 +14,15 @@ def validate(model, val_dataloader):
     predictions = []
     labels = []
     losses = []
+    loop_val = tqdm(enumerate(val_dataloader), total=len(val_dataloader), leave=False)
     with torch.no_grad():
-        for batch in val_dataloader:
+        for index, batch in loop_val:
             loss, _, pred_label_id, label = model(batch)
             loss = loss.mean()
             predictions.extend(pred_label_id.cpu().numpy())
             labels.extend(label.cpu().numpy())
             losses.append(loss.cpu().numpy())
+            loop_val.set_description(f'Evaluation [{index}/{len(val_dataloader)}]')
     loss = sum(losses) / len(losses)
     results = evaluate(predictions, labels)
 
@@ -34,19 +36,19 @@ def train_and_validate(args):
 
     # 2. build model and optimizers
     model = MultiModal(args)
-    ema = EMA(model, 0.999)
-    ema.register()
     optimizer, scheduler = build_optimizer(args, model)
     if args.device == 'cuda':
         model = torch.nn.parallel.DataParallel(model.to(args.device))
-
     # 3. training
     step = 0
     best_score = args.best_score
-    start_time = time.time()
-    num_total_steps = len(train_dataloader) * args.max_epochs
+
+    # ema = EMA(model, 0.999)
+    # ema.register()
+    # fgm = FGM(model)
     for epoch in range(args.max_epochs):
-        for batch in train_dataloader:
+        loop = tqdm(enumerate(train_dataloader), total=len(train_dataloader))
+        for index, batch in loop:
             model.train()
             loss, accuracy, _, _ = model(batch)
             loss = loss.mean()
@@ -55,20 +57,35 @@ def train_and_validate(args):
             optimizer.step()
             optimizer.zero_grad()
             scheduler.step()
-            ema.update()
             step += 1
-            if step % args.print_steps == 0:
-                time_per_step = (time.time() - start_time) / max(1, step)
-                remaining_time = time_per_step * (num_total_steps - step)
-                remaining_time = time.strftime('%H:%M:%S', time.gmtime(remaining_time))
-                ema.apply_shadow()
-                logout().info(
-                    f"Epoch {epoch} step {step} eta {remaining_time}: loss {loss:.3f}, accuracy {accuracy:.3f}")
+
+            # model.train()
+            # loss,accuracy,_,_ = model(batch)
+            # loss = loss.mean()
+            # accuracy = accuracy.mean()
+            # loss.backward()
+            # fgm.attack()
+            # loss_sum,accuracy_sum,_,_  = model(batch)
+            # loss_sum = loss_sum.mean()
+            # accuracy_sum = accuracy.mean()
+            # loss_sum.backward()
+            # fgm.restore()
+            #
+            # optimizer.step()
+            # optimizer.zero_grad()
+            # scheduler.step()
+            # ema.update()
+            # model.zero_grad()
+            # step += 1
+
+            loop.set_description(f'Epoch [{epoch}/{args.max_epochs}]')
+            loop.set_postfix(loss=loss.item(), acc=accuracy.item())
 
         # 4. validation
+        # ema.apply_shadow()
         loss, results = validate(model, val_dataloader)
         results = {k: round(v, 4) for k, v in results.items()}
-        logout().info(f"Epoch {epoch} step {step}: loss {loss:.3f}, {results}")
+        logout().info(f"Epoch {epoch}: loss {loss:.3f}, f1 {results['mean_f1']}")
 
         # 5. save checkpoint
         mean_f1 = results['mean_f1']
@@ -77,8 +94,7 @@ def train_and_validate(args):
             state_dict = model.module.state_dict() if args.device == 'cuda' else model.state_dict()
             torch.save({'epoch': epoch, 'model_state_dict': state_dict, 'mean_f1': mean_f1},
                        f'{args.savedmodel_path}/model_epoch_{epoch}_mean_f1_{mean_f1}.bin')
-        ema.restore()
-
+        # ema.restore()
 
 def main():
     args = parse_args()  # input the parameters from config.py
