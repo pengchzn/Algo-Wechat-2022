@@ -90,5 +90,5 @@ P.S： 抽帧算法为 [Swin Transformer Tiny](https://zhuanlan.zhihu.com/p/3613
 | 1        | 0.660832           | 0.67616            | 0.419784           | 0.54980            | 0.576644  | Baseline: Pure            |
 | 2        | 0.639944           | 0.65552            | 0.389201           | 0.52444            | 0.552276  | Baseline: macBERT -> PERT |
 | 3        | 0.677707           | 0.68292            | 0.431685           | 0.55224            | 0.586138  | Baseline: BERT -> ERNIE   |
-| 4        |                    |                    |                    |                    |           |                           |
+| 4        | 0.686663           | 0.7042             | 0.459916           | 0.577              |0.606945   | Baseline：ERNIE -> Roberta, +asr |
 | 5        |                    |                    |                    |                    |           |                           |
